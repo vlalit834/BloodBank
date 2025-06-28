@@ -1,24 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { Route, Routes, useLocation } from "react-router-dom";
+import { TabContext } from "./component/ControlledTabs";
+import ControlledTabs from "./component/ControlledTabs";
+import Register from "./Pages/Register";
+import Login from "./Pages/Login";
+import Admin from "./Pages/Admin";
 
 function App() {
+  const location = useLocation();
+  const showTabs = location.pathname === "/" || location.pathname === "/login";
+  const [tabKey, setTabKey] = useState("donar");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <TabContext.Provider value={tabKey}>
+      {showTabs && <ControlledTabs activeKey={tabKey} onSelect={setTabKey} />}
+      <Routes>
+        <Route path="/" element={<Register />} />
+        <Route path="/login" element={<Login />}>
+          {/* <Route path="/admin" element={<Admin />} /> */}
+        </Route>
+      </Routes>
+    </TabContext.Provider>
   );
 }
 
