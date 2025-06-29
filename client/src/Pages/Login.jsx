@@ -1,10 +1,12 @@
 import React from "react";
-import ControlledTabs from "../component/ControlledTabs";
 import FormInput from "../component/Forms/FormInput";
+import Header from "../component/Header";
+import SideBar from "../component/SideBar";
 
 function Login() {
   return (
     <div>
+      <Header />
       <FormInput />
     </div>
   );

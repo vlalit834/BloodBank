@@ -1,116 +1,89 @@
-import React, { useContext } from "react";
-import Form from "react-bootstrap/Form";
-import SubmitButton from "../SubmitButton";
+import React, { useContext, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Form, Card } from "react-bootstrap";
+import SubmitButton from "../SubmitButton";
 import FormType from "./FormType";
 import InputFiled from "./InputFiled";
-import { TabContext } from "../ControlledTabs";
-function FormInput() {
-  const location = useLocation();
-  const type = location.pathname === "/login" ? "Login" : "Register";
+import ControlledTabs, { TabContext } from "../ControlledTabs";
+
+export default function FormInput() {
+  const { pathname, state } = useLocation();
+  const type = pathname === "/login" ? "Login" : "Register";
   const navigate = useNavigate();
-  const selectedTab = useContext(TabContext);
-  const handleLoginClick = () => navigate(type === "Login" ? "/" : "/login");
+  const initialTab = state?.tabKey || "donar";
+  const [tabKey, setTabKey] = useState(initialTab);
 
-  const inputStyle = {
-    backgroundColor: "#f1f3f4",
-    border: "1px solid #d3d3d3",
-    borderRadius: "6px",
-    padding: "12px",
-    fontSize: "16px",
-    marginBottom: "10px",
-  };
-  const formStyle = {
-    maxWidth: "400px",
-    margin: "40px 0 0 0",
-    padding: "24px",
-    backgroundColor: "#f7f7f9",
-    borderRadius: "12px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-  };
-  const actionRowStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  };
-  const loginTextStyle = {
-    fontSize: "15px",
-    color: "#0d6efd",
-    textDecoration: "underline",
-    cursor: "pointer",
+  const toggleAuth = () => {
+    const target = type === "Login" ? "/" : "/login";
+    navigate(target, { state: { tabKey } });
   };
 
-  const tabKey = selectedTab ? selectedTab.toLowerCase() : "";
+  const tabKeyLower = tabKey.toLowerCase();
+  const fields =
+    type === "Login"
+      ? [
+          ["email", "Email"],
+          ["password", "Password"],
+        ]
+      : [
+          ["text", "Name"],
+          ["email", "Email"],
+          ["password", "Password"],
+          ["tel", "Phone number"],
+          ...(tabKeyLower !== "admin"
+            ? [
+                ["text", "Gender"],        // Only for donor and patient
+                ["text", "Blood Group"],   // Only for donor and patient
+                ["number", "Age"],
+              ]
+            : []),
+        ];
 
   return (
-    <>
-      <FormType type={type} />
-      <Form style={formStyle}>
-        {type === "Login" ? (
-          <>
-            <InputFiled
-              type="email"
-              placeholder="Email"
-              controlId="formEmail"
-              style={inputStyle}
-            />
-            <InputFiled
-              type="password"
-              placeholder="Password"
-              controlId="formPassword"
-              style={inputStyle}
-            />
-          </>
-        ) : (
-          <>
-            <InputFiled
-              type="text"
-              placeholder="Name"
-              controlId="formName"
-              style={inputStyle}
-            />
-            <InputFiled
-              type="email"
-              placeholder="Email"
-              controlId="formEmail"
-              style={inputStyle}
-            />
-            <InputFiled
-              type="password"
-              placeholder="Password"
-              controlId="formPassword"
-              style={inputStyle}
-            />
-            <InputFiled
-              type="tel"
-              placeholder="Phone number"
-              controlId="formPhone"
-              style={inputStyle}
-            />
-            {!["hospital", "college"].includes(tabKey) && (
-              <InputFiled
-                type="number"
-                placeholder="Age"
-                controlId="formAge"
-                style={inputStyle}
-              />
-            )}
-          </>
-        )}
-        <div style={actionRowStyle}>
-          <SubmitButton type={type} />
-          <span>
-            {type === "Register"
-              ? "Already Have an account? "
-              : "Create a new account "}
-            <span style={loginTextStyle} onClick={handleLoginClick}>
-              {type === "Register" ? "Login" : "Register"}
-            </span>
-          </span>
-        </div>
-      </Form>
-    </>
+    <div className="d-flex vh-100 justify-content-center align-items-center">
+      <div>
+        <TabContext.Provider value={tabKey}>
+          <ControlledTabs
+            activeKey={tabKey}
+            onSelect={setTabKey}
+            tabs={[
+              { eventKey: "donar", title: "Donor" },
+              { eventKey: "patient", title: "Patient" },
+              { eventKey: "admin", title: "Admin" },
+            ]}
+          />
+          <FormType type={type} className="mb-4 text-center" />
+          <Card className="p-4 shadow-sm rounded" style={{ maxWidth: 400 }}>
+            <Form>
+              {fields.map(([fldType, placeholder], idx) => (
+                <InputFiled
+                  key={idx}
+                  type={fldType}
+                  placeholder={placeholder}
+                  controlId={"form" + placeholder.replace(/\s+/g, "")}
+                  className="mb-3"
+                />
+              ))}
+
+              <div className="d-flex justify-content-between align-items-center mt-2">
+                <SubmitButton type={type} />
+                <small>
+                  {type === "Register"
+                    ? "  Already have an account?  "
+                    : "  Create a new account  "}
+                  <span
+                    className="text-primary text-decoration-underline"
+                    role="button"
+                    onClick={toggleAuth}
+                  >
+                    {type === "Register" ? "Login" : "Register"}
+                  </span>
+                </small>
+              </div>
+            </Form>
+          </Card>
+        </TabContext.Provider>
+      </div>
+    </div>
   );
 }
-
-export default FormInput;
